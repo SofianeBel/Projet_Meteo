@@ -1,0 +1,261 @@
+<!--
+Ce document HTML représente une application météo simple qui permet aux utilisateurs de rechercher
+les prévisions météorologiques pour une ville donnée.
+
+Composants principaux :
+
+1. **Styles CSS** : Le style intégré dans la balise `<style>` offre une mise en page attrayante avec
+    un arrière-plan animé, des bulles en mouvement et une disposition responsive pour les appareils mobiles.
+
+2. **Structure HTML** :
+    - Une `div` avec la classe `container` qui contient :
+      - Un titre `<h1>` affichant "Météo".
+      - Un champ de saisie `<input>` pour entrer le nom de la ville.
+      - Un bouton `<button>` pour lancer la recherche.
+      - Une `div` avec l'id `meteo` pour afficher les informations météo récupérées.
+
+3. **Script JavaScript** :
+    - **Clé API** : Utilise une clé API pour accéder au service `WeatherAPI`.
+    - **Écouteur d'événement** : Ajoute un écouteur sur le bouton "Rechercher" pour déclencher la récupération des données météo.
+    - **Fonction `afficherMeteo`** : Traite et affiche les données météo reçues, y compris le nom de la ville, le pays, la température moyenne, les conditions météorologiques et une icône correspondante.
+    - **Gestion des erreurs** : En cas d'échec lors de la récupération des données, un message d'erreur s'affiche.
+
+Fonctionnalités supplémentaires :
+
+- **Responsive Design** : Les styles CSS incluent des media queries pour assurer une bonne présentation sur les écrans de petite taille.
+- **Arrière-plan Animé** : Un arrière-plan coloré avec des animations pour améliorer l'esthétique de l'application.
+-->
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Météo SPA</title>
+    <style>
+      /* Styles de base */
+      body {
+        font-family: "Arial", sans-serif;
+        background: linear-gradient(135deg, #87ceeb, #ffb6c1);
+        margin: 0;
+        color: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+
+      .container {
+        width: 90%;
+        max-width: 500px;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+
+      h1 {
+        font-size: 2em;
+        color: #333;
+        margin-bottom: 15px;
+      }
+
+      input[type="text"] {
+        width: 70%;
+        padding: 10px;
+        border: 2px solid #87ceeb;
+        border-radius: 10px;
+        font-size: 1em;
+        margin-bottom: 15px;
+        outline: none;
+        transition: border-color 0.3s;
+      }
+
+      input[type="text"]:focus {
+        border-color: #ff7f50;
+      }
+
+      button {
+        background-color: #87ceeb;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        font-size: 1em;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: #ff7f50;
+      }
+
+      #meteo {
+        margin-top: 20px;
+      }
+
+      #meteo h2 {
+        font-size: 1.5em;
+        color: #333;
+        margin-bottom: 10px;
+      }
+
+      #meteo h3 {
+        font-size: 1.2em;
+        color: #87ceeb;
+        margin-top: 15px;
+      }
+
+      #meteo p {
+        font-size: 1em;
+        margin: 5px 0;
+      }
+
+      #meteo img {
+        width: 50px;
+        height: 50px;
+        margin: 5px 0;
+      }
+
+      @media (max-width: 600px) {
+        .container {
+          width: 95%;
+          padding: 15px;
+        }
+
+        h1 {
+          font-size: 1.8em;
+        }
+
+        input[type="text"],
+        button {
+          width: 90%;
+          margin: 5px 0;
+        }
+      }
+
+      .background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, #ff0066, #ffcc00, #33ccff, #ff0066);
+        background-size: 600% 600%;
+        animation: backgroundAnimation 20s infinite;
+        z-index: -1;
+        overflow: hidden;
+      }
+
+      @keyframes backgroundAnimation {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+
+      .container {
+        position: relative;
+        z-index: 1;
+      }
+
+      .background::before,
+      .background::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        animation: bubbleAnimation 15s infinite;
+      }
+
+      .background::before {
+        width: 200px;
+        height: 200px;
+        left: 10%;
+        top: 80%;
+        animation-duration: 18s;
+      }
+
+      .background::after {
+        width: 300px;
+        height: 300px;
+        left: 70%;
+        top: 90%;
+        animation-duration: 25s;
+      }
+
+      @keyframes bubbleAnimation {
+        0% {
+          transform: translateY(0) scale(1);
+        }
+        50% {
+          transform: translateY(-500px) scale(1.5);
+        }
+        100% {
+          transform: translateY(-1000px) scale(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="background"></div>
+    <div class="container">
+      <h1>Météo</h1>
+      <input type="text" id="ville" placeholder="Entrez une ville" />
+      <button type="button" id="rechercher">Rechercher</button>
+      <div id="meteo"></div>
+    </div>
+  </body>
+  <script>
+    const apiKey = "372722cb1a384e72acd125444240811";
+    const villeInput = document.getElementById("ville");
+    const rechercherBtn = document.getElementById("rechercher");
+    const meteoDiv = document.getElementById("meteo");
+
+    /* Récupère les données météo pour la ville saisie */
+    rechercherBtn.addEventListener("click", () => {
+      const ville = villeInput.value;
+      const url = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${ville}&days=4`;
+
+      /* Appel à l'API WeatherAPI pour récupérer les données météo */
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => {
+          afficherMeteo(data);
+        })
+        .catch((error) => {
+          console.error("Erreur lors de la récupération de la météo :", error);
+          meteoDiv.innerHTML = "<p>Impossible de charger la météo.</p>";
+        });
+    });
+
+    /* Affiche les données météo récupérées */
+    function afficherMeteo(data) {
+      let html = `<h2>${data.location.name}, ${data.location.country}</h2>`;
+      for (let i = 0; i < data.forecast.forecastday.length; i++) {
+        const jour = data.forecast.forecastday[i];
+        console.log(jour);
+        html += `
+          <h3>${i === 0 ? "Aujourd'hui" : `Jour ${i}`}</h3>
+          <p>Température : ${jour.day.avgtemp_c} °C</p>
+          <p>Condition : ${jour.day.condition.text}</p>
+          <img src="https:${jour.day.condition.icon}" alt="${
+          jour.day.condition.text
+        }">
+          <p>${jour.astro.is_day === 1 ? "Jour" : "Nuit"}</p>
+        `;
+      }
+      meteoDiv.innerHTML = html;
+    }
+  </script>
+</html>
