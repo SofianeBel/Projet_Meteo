@@ -205,6 +205,63 @@ Fonctionnalités supplémentaires :
           transform: translateY(-1000px) scale(0);
         }
       }
+
+      /* Styles pour le tableau de détails horaires */
+      #detailsHoraire {
+        display: none;
+        padding: 20px;
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 10px;
+        max-width: 600px;
+        margin: auto;
+        overflow-x: auto;
+      }
+
+      #detailsHoraire table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      #detailsHoraire th,
+      #detailsHoraire td {
+        padding: 10px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      #detailsHoraire th {
+        background-color: #87ceeb;
+        color: white;
+        font-weight: bold;
+      }
+
+      #detailsHoraire tr:nth-child(even) {
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+
+      #detailsHoraire tr:nth-child(odd) {
+        background-color: #ffffff;
+      }
+
+      #detailsHoraire td {
+        color: #333;
+      }
+
+      #detailsHoraire h2 {
+        color: #264653;
+        font-size: 1.5em;
+        margin-bottom: 10px;
+      }
+
+      #detailsHoraire {
+        padding: 20px;
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 10px;
+        max-width: 600px;
+        margin: auto;
+        overflow-x: auto;
+      }
     </style>
   </head>
   <body>
@@ -215,6 +272,7 @@ Fonctionnalités supplémentaires :
       <button type="button" id="rechercher">Rechercher</button>
       <div id="meteo"></div>
     </div>
+    <div class="details-horaire" id="detailsHoraire"></div>
   </body>
   <script>
     const apiKey = "372722cb1a384e72acd125444240811";
@@ -224,6 +282,9 @@ Fonctionnalités supplémentaires :
 
     /* Récupère les données météo pour la ville saisie */
     rechercherBtn.addEventListener("click", () => {
+      const detailsHoraire = document.getElementById("detailsHoraire");
+      detailsHoraire.style.display = "none";
+
       const ville = villeInput.value;
       const url = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${ville}&days=4`;
 
@@ -232,6 +293,7 @@ Fonctionnalités supplémentaires :
         .then((response) => response.json())
         .then((data) => {
           afficherMeteo(data);
+          afficherDetailsHoraire();
         })
         .catch((error) => {
           console.error("Erreur lors de la récupération de la météo :", error);
@@ -239,23 +301,78 @@ Fonctionnalités supplémentaires :
         });
     });
 
-    /* Affiche les données météo récupérées */
+    let previusData = null;
     function afficherMeteo(data) {
       let html = `<h2>${data.location.name}, ${data.location.country}</h2>`;
-      for (let i = 0; i < data.forecast.forecastday.length; i++) {
-        const jour = data.forecast.forecastday[i];
-        console.log(jour);
+      data.forecast.forecastday.forEach((jour, index) => {
+        const date = new Date(jour.date);
+        const options = {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        };
+        const dateStr = date.toLocaleDateString("fr-FR", options);
+
         html += `
-          <h3>${i === 0 ? "Aujourd'hui" : `Jour ${i}`}</h3>
+          <h3>${index === 0 ? "Aujourd'hui - " : ""}${dateStr}</h3>
           <p>Température : ${jour.day.avgtemp_c} °C</p>
           <p>Condition : ${jour.day.condition.text}</p>
           <img src="https:${jour.day.condition.icon}" alt="${
           jour.day.condition.text
         }">
-          <p>${jour.astro.is_day === 1 ? "Jour" : "Nuit"}</p>
+          <button onclick="afficherDetailsHoraire(${index})">Voir les détails horaires</button>
         `;
-      }
+      });
       meteoDiv.innerHTML = html;
+      window.previusData = data;
+    }
+
+    function cacherDetailsHoraire() {
+      const detailsHoraire = document.getElementById("detailsHoraire");
+      detailsHoraire.style.display = "none";
+    }
+
+    // Afficher un bouton pour afficher les détails horaires
+    // lorsqu'on reçoit les données météo
+    function afficherDetailsHoraire(jourIndex) {
+      if (jourIndex === undefined) {
+        return;
+      }
+      const detailsHoraire = document.getElementById("detailsHoraire");
+      detailsHoraire.style.display = "block"; // Affiche la div
+
+      const jour = window.previusData.forecast.forecastday[jourIndex];
+
+      let detailHtml = `
+        <button onClick="cacherDetailsHoraire()">Fermer</button>
+        <h2>Détails horaires pour ${jour.date}</h2>
+        <table>
+          <tr>
+            <th>Heure</th>
+            <th>Température ressentie (°C)</th>
+            <th>Vent (km/h)</th>
+            <th>Humidité (%)</th>
+            <th>Indice UV</th>
+            <th>Couverture nuageuse (%)</th>
+          </tr>
+          ${jour.hour
+            .map(
+              (heure) => `
+            <tr>
+              <td>${heure.time.split(" ")[1]}</td>
+              <td>${heure.feelslike_c}</td>
+              <td>${heure.wind_kph}</td>
+              <td>${heure.humidity}</td>
+              <td>${heure.uv}</td>
+              <td>${heure.cloud}</td>
+            </tr>
+          `
+            )
+            .join("")}
+        </table>
+      `;
+      detailsHoraire.innerHTML = detailHtml;
     }
   </script>
 </html>
