@@ -30,7 +30,7 @@ Fonctionnalités supplémentaires :
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Météo SPA</title>
+    <title>Météo BELKESSA Sofiane</title>
     <style>
       /* Styles de base */
       body {
@@ -41,7 +41,8 @@ Fonctionnalités supplémentaires :
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 100vh;
+        min-height: 100vh;
+        overflow: hidden;
       }
 
       .container {
@@ -52,6 +53,8 @@ Fonctionnalités supplémentaires :
         border-radius: 15px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         text-align: center;
+        position: relative;
+        z-index: 1;
       }
 
       h1 {
@@ -132,6 +135,10 @@ Fonctionnalités supplémentaires :
           width: 90%;
           margin: 5px 0;
         }
+
+        #detailsHoraire {
+          margin-top: 20px;
+        }
       }
 
       .background {
@@ -157,16 +164,6 @@ Fonctionnalités supplémentaires :
         100% {
           background-position: 0% 50%;
         }
-      }
-
-      body {
-        margin: 0;
-        overflow: hidden;
-      }
-
-      .container {
-        position: relative;
-        z-index: 1;
       }
 
       .background::before,
@@ -212,15 +209,17 @@ Fonctionnalités supplémentaires :
         padding: 20px;
         background-color: rgba(255, 255, 255, 0.8);
         border-radius: 10px;
-        max-width: 600px;
+        max-width: 100%;
         margin: auto;
-        overflow-x: auto;
+        overflow-x: auto; /* Permet le défilement horizontal */
+        overflow-y: auto;
       }
 
       #detailsHoraire table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 20px;
+        min-width: 600px; /* Assure que le tableau a une largeur minimale */
       }
 
       #detailsHoraire th,
@@ -253,15 +252,6 @@ Fonctionnalités supplémentaires :
         font-size: 1.5em;
         margin-bottom: 10px;
       }
-
-      #detailsHoraire {
-        padding: 20px;
-        background-color: rgba(255, 255, 255, 0.8);
-        border-radius: 10px;
-        max-width: 600px;
-        margin: auto;
-        overflow-x: auto;
-      }
     </style>
   </head>
   <body>
@@ -280,7 +270,6 @@ Fonctionnalités supplémentaires :
     const rechercherBtn = document.getElementById("rechercher");
     const meteoDiv = document.getElementById("meteo");
 
-    /* Récupère les données météo pour la ville saisie */
     rechercherBtn.addEventListener("click", () => {
       const detailsHoraire = document.getElementById("detailsHoraire");
       detailsHoraire.style.display = "none";
@@ -288,12 +277,10 @@ Fonctionnalités supplémentaires :
       const ville = villeInput.value;
       const url = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${ville}&days=4`;
 
-      /* Appel à l'API WeatherAPI pour récupérer les données météo */
       fetch(url)
         .then((response) => response.json())
         .then((data) => {
           afficherMeteo(data);
-          afficherDetailsHoraire();
         })
         .catch((error) => {
           console.error("Erreur lors de la récupération de la météo :", error);
@@ -301,7 +288,6 @@ Fonctionnalités supplémentaires :
         });
     });
 
-    let previusData = null;
     function afficherMeteo(data) {
       let html = `<h2>${data.location.name}, ${data.location.country}</h2>`;
       data.forecast.forecastday.forEach((jour, index) => {
@@ -318,9 +304,7 @@ Fonctionnalités supplémentaires :
           <h3>${index === 0 ? "Aujourd'hui - " : ""}${dateStr}</h3>
           <p>Température : ${jour.day.avgtemp_c} °C</p>
           <p>Condition : ${jour.day.condition.text}</p>
-          <img src="https:${jour.day.condition.icon}" alt="${
-          jour.day.condition.text
-        }">
+          <img src="https:${jour.day.condition.icon}" alt="${jour.day.condition.text}">
           <button onclick="afficherDetailsHoraire(${index})">Voir les détails horaires</button>
         `;
       });
@@ -333,14 +317,12 @@ Fonctionnalités supplémentaires :
       detailsHoraire.style.display = "none";
     }
 
-    // Afficher un bouton pour afficher les détails horaires
-    // lorsqu'on reçoit les données météo
     function afficherDetailsHoraire(jourIndex) {
       if (jourIndex === undefined) {
         return;
       }
       const detailsHoraire = document.getElementById("detailsHoraire");
-      detailsHoraire.style.display = "block"; // Affiche la div
+      detailsHoraire.style.display = "block";
 
       const jour = window.previusData.forecast.forecastday[jourIndex];
 
